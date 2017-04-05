@@ -9,12 +9,17 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/fatih/color"
 	"github.com/headzoo/surf"
 	"github.com/tidwall/gjson"
 )
 
 func init() {
 
+}
+
+func debug(d string) {
+	color.Red(d)
 }
 
 //VideoStream has actual video file data
