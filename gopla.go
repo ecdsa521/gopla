@@ -95,7 +95,7 @@ func getJSON(url string) gjson.Result {
 //GetAllHashes returns all video hashes from given search
 func GetAllHashes(id string, name string) []string {
 	var link = fmt.Sprintf("https://seeker.redefine.pl/ipla/multi.json?free=1&page=1&platform=www_ipla_tv&portal_id=ipla&query=%s&category_ids%%5B%%5D=%s&size=5000&sort=recent&sound=&top_category=", url.QueryEscape(name), url.QueryEscape(id))
-	fmt.Println(link)
+	//fmt.Println(link)
 	var jsonR = getJSON(link)
 	var data []string
 	for _, v := range jsonR.Array() {
