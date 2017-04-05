@@ -17,49 +17,68 @@ var grabHashes = flag.Bool("a", false, "Grab all hashes for search query")
 var grabLinks = flag.Bool("l", false, "Grab all links for search query")
 var wgetLinks = flag.Bool("w", false, "Generate batch output for wget downloads")
 
-func wgetAllFiles(data *gopla.SearchData) {
-	for _, v := range gopla.GetAllHashes(data.ID, data.Title) {
-		var data = gopla.GetVideo(v)
+func wgetAllFiles(hash []string) {
+	for _, h := range hash {
+
+		var data = gopla.GetVideo(h)
 		sort.Sort(sort.Reverse(&data.Videos))
-		for i, d := range data.Videos {
+		for _, d := range data.Videos {
 			if *best {
 				fmt.Printf("wget -O '%s.mp4' '%s'\n", data.Title, d.URL)
 				break
 			} else {
-				fmt.Printf("wget -O '%s_%d.mp4' '%s'\n", data.Title, i, d.URL)
+				fmt.Printf("wget -O '%s (%s).mp4' '%s'\n", data.Title, d.Quality, d.URL)
 			}
 
 		}
 	}
-}
-func grabAllHashes(data *gopla.SearchData) {
-	for _, v := range gopla.GetAllHashes(data.ID, data.Title) {
-		color.Blue("%s", v)
-	}
+
 }
 
-func grabAllLinks(data *gopla.SearchData) {
-	for _, v := range gopla.GetAllHashes(data.ID, data.Title) {
-		grabByHash(v)
-	}
-}
 func grabByName(name string) {
-	var res = gopla.FindVideo(name)
+	var res = gopla.FindVideo(name, "KATEGORIE")
+	if res == nil || len(res) == 0 {
+		res = gopla.FindVideo(name, "")
+
+	}
+	//for _, v := range gopla.GetAllHashes(data.ID, data.Title) {
+	//	var data = gopla.GetVideo(v)
+
 	for _, v := range res {
+		//f/mt.Printf("%v\n", v)
 		if *verbose {
 			color.Green(v.Title)
 			color.Cyan(v.Description)
-			color.Blue(v.URL)
+			color.Blue("%s | %s", v.URL, v.Hash)
 
 		}
-		if *grabHashes {
-			grabAllHashes(&v)
-		}
-		if *grabLinks {
-			grabAllLinks(&v)
-		}
-		if *wgetLinks {
-			wgetAllFiles(&v)
+		if v.Type == "vod" {
+			var hashes []string
+			hashes = append(hashes, v.Hash)
+			if *grabLinks {
+				grabByHash(v.Hash)
+			}
+			if *grabHashes {
+				color.Blue(v.Hash)
+			}
+			if *wgetLinks {
+				wgetAllFiles(hashes)
+			}
+		} else if v.Type == "category" {
+			var hashes = gopla.GetAllHashes(v.ID, v.Title)
+			if *wgetLinks {
+				wgetAllFiles(hashes)
+			}
+			for _, d := range hashes {
+
+				if *grabLinks {
+					grabByHash(d)
+				}
+				if *grabHashes {
+					color.Blue(d)
+				}
+
+			}
 		}
 	}
 }

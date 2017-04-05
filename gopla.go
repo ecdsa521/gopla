@@ -45,6 +45,7 @@ type SearchData struct {
 	Image       string
 	URL         string
 	Hash        string
+	Type        string
 }
 
 //SearchDatas ...
@@ -94,6 +95,7 @@ func getJSON(url string) gjson.Result {
 //GetAllHashes returns all video hashes from given search
 func GetAllHashes(id string, name string) []string {
 	var link = fmt.Sprintf("https://seeker.redefine.pl/ipla/multi.json?free=1&page=1&platform=www_ipla_tv&portal_id=ipla&query=%s&category_ids%%5B%%5D=%s&size=5000&sort=recent&sound=&top_category=", url.QueryEscape(name), url.QueryEscape(id))
+	fmt.Println(link)
 	var jsonR = getJSON(link)
 	var data []string
 	for _, v := range jsonR.Array() {
@@ -103,15 +105,17 @@ func GetAllHashes(id string, name string) []string {
 }
 
 //FindVideo finds the material and returns informations about it
-func FindVideo(name string) SearchDatas {
-	var link = fmt.Sprintf("https://seeker.redefine.pl/ipla/multi.json?free=1&page=1&platform=www_ipla_tv&portal_id=ipla&query=%s&size=150&sort=recent&sound=&top_category=KATEGORIE", url.QueryEscape(name))
+func FindVideo(name string, category string) SearchDatas {
+	var link = fmt.Sprintf("https://seeker.redefine.pl/ipla/multi.json?free=1&page=1&platform=www_ipla_tv&portal_id=ipla&query=%s&size=150&sort=recent&sound=&top_category=%s", url.QueryEscape(name), category)
 	var jsonR = getJSON(link)
+	//fmt.Println(link)
 
 	if len(jsonR.Array()) == 0 {
 		return nil
 	}
 	var data SearchDatas
 	for _, v := range jsonR.Array() {
+
 		data = append(data, SearchData{
 			ID:          v.Get("id").String(),
 			Description: v.Get("description").String(),
@@ -120,7 +124,9 @@ func FindVideo(name string) SearchDatas {
 			Image:       v.Get("image").String(),
 			URL:         fmt.Sprintf("http://www.ipla.tv/kategoria/%s", v.Get("id").String()),
 			Hash:        v.Get("media_id").String(),
+			Type:        v.Get("_type").String(),
 		})
+
 	}
 	return data
 }
